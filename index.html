@@ -914,20 +914,8 @@ html[data-theme="light"] .m-head small { background: rgba(255,255,255,.6); borde
       <div class="rows" id="rows"><div class="skel" style="height:96px"></div></div>
     </section>
     <section class="sec" id="ebooks">
-      <div class="sec-head rv"><h2>Biblioteca</h2><small>Clínica Rentável · 12 e-books</small></div>
-      <div id="books">
-        <a href="./biblioteca/" style="display:flex;align-items:center;gap:20px;padding:24px 28px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:16px;text-decoration:none;color:inherit;transition:border-color .2s,transform .2s;max-width:640px" onmouseover="this.style.borderColor='var(--border-strong)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border-default)';this.style.transform=''">
-          <div style="flex-shrink:0;width:52px;height:52px;border-radius:12px;background:var(--accent-gradient);display:grid;place-items:center">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:4px">Coleção completa</div>
-            <div style="font-size:17px;font-weight:700;margin-bottom:4px;color:var(--text-primary)">12 e-books · Clínica Rentável</div>
-            <div style="font-size:13px;color:var(--text-secondary)">Da realidade financeira ao plano de 12 meses. Toque para acessar todos.</div>
-          </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:.45"><path d="M9 18l6-6-6-6"/></svg>
-        </a>
-      </div>
+      <div class="sec-head rv"><h2>Biblioteca</h2><small id="booksCount"></small></div>
+      <div id="books"><div class="skel" style="height:220px"></div></div>
     </section>
     <section class="sec" id="resultados">
       <div class="sec-head rv"><h2 id="resultsTitle"></h2></div>
@@ -1022,6 +1010,9 @@ const CFG = {
       {"slug": "bonus-whatsapp", "cover": "./img/bonus-whatsapp.webp", "n": 7, "badge": "Bônus", "title": "Scripts de WhatsApp que Convertem", "lessons": 0, "progress": 0, "desc": "Modelos prontos de mensagens para o WhatsApp que transformam interessados em pacientes agendados."}
     ]
   },
+  "ebooks": [
+    {"cover": "./img/ebook-script-de-vendas.webp", "tag": "E-book", "title": "Script de Vendas para Terapeutas", "sub": "Playbook de vendas · 17 capítulos · 53 páginas", "desc": "Do primeiro contato ao fechamento: roteiros prontos, quebra de objeção e o ciclo comercial completo para vender com confiança e ética no WhatsApp.", "pdf": "./ebooks/script-de-vendas-para-terapeutas.pdf"}
+  ],
   "materials": [],
   "footer": {
     "copy": "Terapeuta de Sucesso © 2026",
@@ -1397,18 +1388,24 @@ if (course.length) {
 
 /* biblioteca (e-books exclusivos) */
 defer('ebooks', 4, () => {
-  const total = (CFG.ebooks || []).length;
-  const label = total ? `${total} e-books · Clínica Rentável` : 'Clínica Rentável';
-  const sub = total ? 'Confira nossos materiais em PDF. Toque para acessar todos.' : 'Os materiais da Biblioteca serão disponibilizados em breve.';
-  const href = total ? './biblioteca/' : '#';
-  $('#books').innerHTML = `<a href="${href}" style="display:flex;align-items:center;gap:20px;padding:24px 28px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:16px;text-decoration:none;color:inherit;transition:border-color .2s,transform .2s;max-width:640px" onmouseover="this.style.borderColor='var(--border-strong)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border-default)';this.style.transform=''">
-    <div style="flex-shrink:0;width:52px;height:52px;border-radius:12px;background:var(--accent-gradient);display:grid;place-items:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div>
-    <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:4px">Coleção completa</div><div style="font-size:17px;font-weight:700;margin-bottom:4px;color:var(--text-primary)">${label}</div><div style="font-size:13px;color:var(--text-secondary)">${sub}</div></div>
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:.45"><path d="M9 18l6-6-6-6"/></svg>
-  </a>`;
-  /* redireciona o link "Biblioteca" do nav para a página separada */
-  const navBib = document.querySelector('.nav a[data-s="ebooks"]');
-  if (navBib && total) { navBib.href = './biblioteca/'; navBib.removeAttribute('data-s'); }
+  const list = CFG.ebooks || [];
+  $('#booksCount').textContent = list.length ? `${list.length} ${list.length === 1 ? 'e-book' : 'e-books'}` : '';
+  if (!list.length) { $('#books').innerHTML = `<div class="quote"><span class="row-ic">${ic('book')}</span><span>Os materiais da Biblioteca serão disponibilizados em breve.</span></div>`; return; }
+  $('#books').className = 'books';
+  $('#books').innerHTML = list.map(e => `<article class="book">
+    <a class="book-img" href="${e.pdf}" target="_blank" rel="noopener" aria-label="Ler ${esc(e.title)}"><img src="${e.cover}" alt="Capa: ${esc(e.title)}" loading="lazy" decoding="async" style="aspect-ratio:827/1169"></a>
+    <div class="book-body">
+      <small>${esc(e.tag || 'E-book')}</small>
+      <h3>${esc(e.title)}</h3>
+      <em>${esc(e.sub || '')}</em>
+      <p>${esc(e.desc || '')}</p>
+      <div class="book-cta">
+        <a class="btn btn-primary btn-sm" href="${e.pdf}" target="_blank" rel="noopener">${ic('book')}Ler agora</a>
+        <a class="btn btn-line btn-sm" href="${e.pdf}" download>${ic('download')}Baixar PDF</a>
+      </div>
+    </div>
+  </article>`).join('');
+  $('#books').querySelectorAll('.btn .ic').forEach(i => i.style.cssText = 'fill:none;stroke:currentColor');
 });
 
 /* materiais */
