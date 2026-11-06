@@ -914,6 +914,8 @@ html[data-theme="light"] .hero-photo-wrap { box-shadow: 0 24px 64px rgba(var(--a
   .hero.banner::before, html[data-theme="light"] .hero.banner::before { background: linear-gradient(0deg, #060403 0%, rgba(6,4,3,0) 40%); height: 68vw; max-height: 380px; bottom: auto; }
   .hero.banner .hero-in { margin-top: -56px; padding-bottom: var(--s5); }
 }
+/* seções sempre com a altura real: a rolagem pelo menu cai no lugar certo */
+.sec { content-visibility: visible; }
 </style>
 </head>
 <body>
@@ -1122,7 +1124,7 @@ $('#topbar').innerHTML = `
   <a class="brand" href="#inicio" aria-label="${esc(CFG.site.name)}">${logo}
     <span class="brand-txt"><b>${esc(CFG.site.short || CFG.site.name)}</b><span>${esc(CFG.site.name)}</span></span>
   </a>
-  <nav class="nav" aria-label="Seções">${nav.map(([id, l]) => `<a href="#${id}" data-s="${id}" onclick="toggleFavs(false)">${l}</a>`).join('')}<a href="#favoritos" data-s="favoritos" onclick="event.preventDefault();toggleFavs()">${ic('heart')}Favoritos<span class="cnt favcnt" style="display:none">0</span></a></nav>
+  <nav class="nav" aria-label="Seções">${nav.map(([id, l]) => `<a href="#${id}" data-s="${id}" onclick="goSection('${id}', event)">${l}</a>`).join('')}<a href="#favoritos" data-s="favoritos" onclick="event.preventDefault();toggleFavs()">${ic('heart')}Favoritos<span class="cnt favcnt" style="display:none">0</span></a></nav>
   <div class="top-actions">
     <button class="icon-btn home-btn" id="homeBtn" onclick="goHome()" aria-label="Início: volta ao topo; no topo, atualiza a página" title="Início">${ic('home')}</button>
     <label class="search" id="search">
@@ -1265,13 +1267,25 @@ function goHome() {
 }
 function toggleFavs(force) {
   const on = typeof force === 'boolean' ? force : !document.body.classList.contains('favs');
+  if (on === document.body.classList.contains('favs')) return;   // já está assim: não mexe na rolagem
   const run = () => {
     document.body.classList.toggle('favs', on);
     document.querySelectorAll('[data-s]').forEach(a => a.classList.toggle('on', on && a.dataset.s === 'favoritos'));
     if (on) renderFavs();
-    window.scrollTo({ top: 0 });
+    if (on) window.scrollTo({ top: 0 });
   };
   if (document.startViewTransition && !reduceMotion) document.startViewTransition(run); else run();
+}
+/* menu do topo e barra do celular: monta as seções que faltam e desce até a escolhida */
+function goSection(id, ev) {
+  if (ev) ev.preventDefault();
+  toggleFavs(false);
+  Object.keys(tasks).forEach(runTask);
+  const el = document.getElementById(id); if (!el) return;
+  const go = smooth => { if (id === 'inicio') scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' }); else el.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' }); };
+  requestAnimationFrame(() => go(!reduceMotion));
+  clearTimeout(goSection.t); goSection.t = setTimeout(() => { const top = el.getBoundingClientRect().top; if (id !== 'inicio' && Math.abs(top - (parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 84)) > 40) go(true); }, 900);
+  try { history.replaceState(history.state, '', id === 'inicio' ? location.pathname + location.search : '#' + id); } catch (e) {}
 }
 function renderFavs() {
   const items = mem.fav.map(itemOf).filter(Boolean), les = items.filter(x => !x.mod), mods = items.filter(x => x.mod);
@@ -1504,7 +1518,7 @@ $('#footer').innerHTML = `
   <button class="btn btn-line btn-sm" id="installBtn" style="display:none" onclick="installFlow()">${ic('download')}Instalar app</button>
   ${CFG.footer.support ? `<a class="btn btn-ghost" style="color:var(--text-primary);background:var(--bg-elevated);border-color:var(--border-default)" href="${CFG.footer.support}" target="_blank" rel="noopener">${ic('chat')}Falar com o suporte</a>` : ''}`;
 $('#tabbar').style.setProperty('--n', Math.min(nav.length, 4) + 1);
-$('#tabbar').innerHTML = nav.slice(0, 4).map(([id, l, i]) => `<a href="#${id}" data-s="${id}" onclick="toggleFavs(false)">${ic(i)}${l}</a>`).join('') + `<a href="#favoritos" data-s="favoritos" onclick="event.preventDefault();toggleFavs()">${ic('heart')}Favoritos<span class="cnt favcnt" style="display:none">0</span></a>`;
+$('#tabbar').innerHTML = nav.slice(0, 4).map(([id, l, i]) => `<a href="#${id}" data-s="${id}" onclick="goSection('${id}', event)">${ic(i)}${l}</a>`).join('') + `<a href="#favoritos" data-s="favoritos" onclick="event.preventDefault();toggleFavs()">${ic('heart')}Favoritos<span class="cnt favcnt" style="display:none">0</span></a>`;
 document.querySelectorAll('.btn-primary .ic, .poster-play .ic').forEach(e => { e.style.fill = 'currentColor'; e.style.stroke = 'none'; });
 document.title = CFG.site.name;
 
