@@ -886,6 +886,16 @@ html[data-theme="light"] .m-head small { background: rgba(255,255,255,.6); borde
 .lc.ok .lc-th { border-color: rgba(var(--accent-rgb), .6); }
 .lc.ok:not(.cur) .lc-th::before { content: '✓'; position: absolute; z-index: 2; left: 50%; top: 50%; transform: translate(-50%, -50%); display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--accent-gradient); color: var(--accent-text); font-size: 22px; font-weight: 800; box-shadow: 0 0 32px var(--accent-glow); }
 .lc.ok:not(.cur) b { opacity: .85; }
+/* ajustes Jorge Pimenta: tema claro no dourado da marca e botão secundário visível */
+html[data-theme="light"] .hero h1 strong { color: var(--accent); }
+html[data-theme="light"] .hero p { color: var(--text-secondary); }
+html[data-theme="light"] .hero .chip { background: rgba(var(--accent-rgb), .08); border-color: rgba(var(--accent-rgb), .35); color: var(--text-primary); }
+html[data-theme="light"] .hero .btn-ghost { color: var(--text-primary); background: rgba(var(--accent-rgb), .08); border-color: rgba(var(--accent-rgb), .4); }
+html[data-theme="light"] .hero .btn-ghost:hover { background: rgba(var(--accent-rgb), .16); }
+html[data-theme="light"] .hero { background: linear-gradient(160deg, #FFFFFF 0%, var(--bg-base) 100%); }
+.hero-img { object-position: center 25%; }
+html[data-theme="light"] .hero-photo-wrap::before { background: linear-gradient(to bottom, transparent 75%, rgba(0,0,0,.35) 100%); }
+html[data-theme="light"] .hero-photo-wrap { box-shadow: 0 24px 64px rgba(var(--accent-rgb), .18), 0 0 0 1px rgba(var(--accent-rgb), .25); }
 </style>
 </head>
 <body>
@@ -987,8 +997,11 @@ const CFG = {
     "initial": "T"
   },
   "hero": {
-    "img": "./img/hero-jorge.webp",
+    "img": "./img/jorge-hero.jpg",
     "alt": "Jorge Pimenta",
+    "title": "Do consultório à",
+    "bold": "liberdade financeira.",
+    "desc": "O método que já ajudou dezenas de terapeutas a construírem negócios rentáveis sem abrir mão do propósito.",
     "meta": ["6 módulos", "30+ horas de conteúdo", "100 terapeutas formados"],
     "ctaPrimary": {"label": "Continuar assistindo"},
     "ctaSecondary": {"label": "Ver todos os módulos", "href": "#modulos"}
@@ -1011,8 +1024,7 @@ const CFG = {
     ]
   },
   "ebooks": [
-    {"cover": "./img/ebook-script-de-vendas.webp", "tag": "E-book", "title": "Script de Vendas para Terapeutas", "sub": "Playbook de vendas · 17 capítulos · 53 páginas", "desc": "Do primeiro contato ao fechamento: roteiros prontos, quebra de objeção e o ciclo comercial completo para vender com confiança e ética no WhatsApp.", "pdf": "./ebooks/script-de-vendas-para-terapeutas.pdf"},
-    {"cover": "./img/ebook-script-de-vendas-v1.webp", "tag": "E-book", "title": "Script de Vendas para Terapeutas · V1", "sub": "Scripts magnéticos · 17 capítulos · 57 páginas", "desc": "A versão ilustrada do método: scripts magnéticos prontos para abordar, quebrar objeções e fechar pacotes de terapia pelo WhatsApp.", "pdf": "./ebooks/script-de-vendas-para-terapeutas-v1.pdf"}
+    {"cover": "./img/ebook-script-de-vendas-v1.webp", "tag": "E-book", "title": "Script de Vendas para Terapeutas", "sub": "Scripts magnéticos · 17 capítulos · 57 páginas", "desc": "Scripts prontos para abordar, quebrar objeções e fechar pacotes de terapia pelo WhatsApp, do primeiro contato ao fechamento.", "pdf": "./ebooks/script-de-vendas-para-terapeutas-v1.pdf"}
   ],
   "materials": [],
   "footer": {
@@ -1102,9 +1114,25 @@ $('#topbar').innerHTML = `
     <button class="avatar${mem.avatar ? '' : ' hint'}" id="avatarBtn" aria-label="Meu perfil: trocar foto" title="Toque para colocar a sua foto" onclick="openProfile()">${avatarInner()}</button>
   </div>`;
 
-/* hero (fullbanner quando tem img; sem img, layout clássico com gradiente) */
+/* hero (img+title = foto+cópia lado a lado; só img = fullbanner; sem img = clássico) */
 const h = CFG.hero;
-if (h.img) {
+if (h.img && h.title) {
+  $('#inicio').innerHTML = `
+  <div class="hero-in">
+    <div class="hero-copy">
+      <h1>${esc(h.title)}<strong>${esc(h.bold)}</strong></h1>
+      <p>${esc(h.desc)}</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary" id="heroCta" onclick="resume()">${ic('play')}<span>${esc(h.ctaPrimary?.label || 'Começar')}</span></button>
+        <a class="btn btn-ghost" href="${esc(h.ctaSecondary?.href || '#modulos')}">${esc(h.ctaSecondary?.label || 'Ver todos os módulos')}</a>
+      </div>
+      <div class="hero-meta chips">${(h.meta || []).map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div>
+    </div>
+    <div class="hero-photo-wrap">
+      <img class="hero-img" src="${esc(h.img)}" alt="${esc(h.alt || '')}" fetchpriority="high" decoding="async">
+    </div>
+  </div>`;
+} else if (h.img) {
   $('#inicio').classList.add('fullbanner');
   $('#inicio').innerHTML = `<img src="${h.img}" alt="${esc(h.alt || 'Dr. Carlos Nejm – VEST Mentoring')}" fetchpriority="high" decoding="async">`;
 } else {
